@@ -1,7 +1,9 @@
 import tkinter as tk
 from tkinter import messagebox
+from tkcalendar import DateEntry
 import os
-
+from datetime import datetime
+a
 class TaskManager:
     def __init__(self, root):
         self.root = root
@@ -12,6 +14,9 @@ class TaskManager:
         
         self.task_entry = tk.Entry(root, width=50)
         self.task_entry.pack(pady=10)
+        
+        self.date_entry = DateEntry(root, width=12, background='darkblue', foreground='white', borderwidth=2)
+        self.date_entry.pack(pady=10)
         
         self.add_task_button = tk.Button(root, text="Adicionar Tarefa", command=self.add_task)
         self.add_task_button.pack(pady=5)
@@ -44,10 +49,12 @@ class TaskManager:
         
     def add_task(self):
         task = self.task_entry.get()
+        date = self.date_entry.get_date()
         if task:
-            self.tasks.append({"text": task, "completed": False})
+            self.tasks.append({"text": task, "completed": False, "date": date.strftime('%Y-%m-%d')})
             self.update_task_listbox()
             self.task_entry.delete(0, tk.END)
+            self.date_entry.set_date(datetime.today())
         else:
             messagebox.showwarning("Aviso", "Você deve digitar uma tarefa.")
     
@@ -72,10 +79,13 @@ class TaskManager:
             selected_task_index = self.task_listbox.curselection()[0]
             task = self.tasks[selected_task_index]
             new_task_text = self.task_entry.get()
+            new_task_date = self.date_entry.get_date().strftime('%Y-%m-%d')
             if new_task_text:
                 task["text"] = new_task_text
+                task["date"] = new_task_date
                 self.update_task_listbox()
                 self.task_entry.delete(0, tk.END)
+                self.date_entry.set_date(datetime.today())
             else:
                 messagebox.showwarning("Aviso", "Você deve digitar uma tarefa.")
         except IndexError:
@@ -86,7 +96,7 @@ class TaskManager:
         filter_value = self.filter_var.get()
         for task in self.tasks:
             if filter_value == "Todas" or (filter_value == "Pendentes" and not task["completed"]) or (filter_value == "Concluídas" and task["completed"]):
-                task_text = task["text"]
+                task_text = f'{task["text"]} - {task["date"]}'
                 if task["completed"]:
                     task_text += " (Concluída)"
                 self.task_listbox.insert(tk.END, task_text)
@@ -95,7 +105,7 @@ class TaskManager:
         try:
             with open("tasks.txt", "w") as file:
                 for task in self.tasks:
-                    file.write(f'{task["text"]}|{task["completed"]}\n')
+                    file.write(f'{task["text"]}|{task["completed"]}|{task["date"]}\n')
             messagebox.showinfo("Informação", "Tarefas salvas com sucesso.")
         except Exception as e:
             messagebox.showerror("Erro", f"Ocorreu um erro ao salvar as tarefas: {e}")
@@ -107,7 +117,8 @@ class TaskManager:
                     for line in file:
                         if "|" in line:
                             text, completed = line.strip().split("|")
-                            self.tasks.append({"text": text, "completed": completed == "True"})
+                            text, completed, date = line.strip().split("|")
+                            self.tasks.append({"text": text, "completed": completed == "True", "date": date})
         except Exception as e:
             messagebox.showerror("Erro", f"Ocorreu um erro ao carregar as tarefas: {e}")
 
