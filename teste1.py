@@ -3,7 +3,7 @@ from tkinter import messagebox
 from tkcalendar import DateEntry
 import os
 from datetime import datetime
-a
+
 class TaskManager:
     def __init__(self, root):
         self.root = root
@@ -115,9 +115,9 @@ class TaskManager:
             if os.path.exists("tasks.txt"):
                 with open("tasks.txt", "r") as file:
                     for line in file:
-                        if "|" in line:
-                            text, completed = line.strip().split("|")
-                            text, completed, date = line.strip().split("|")
+                        parts = line.strip().split("|")
+                        if len(parts) == 3:
+                            text, completed, date = parts
                             self.tasks.append({"text": text, "completed": completed == "True", "date": date})
         except Exception as e:
             messagebox.showerror("Erro", f"Ocorreu um erro ao carregar as tarefas: {e}")
